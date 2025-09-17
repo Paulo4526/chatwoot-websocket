@@ -5,19 +5,17 @@ import { useEffect, useRef, useState } from "react";
 export default function Home() {
   const [getmessage, setmessage] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>("Conectando...");
-  const processedRef = useRef<Set<string>>(new Set());
-  const {connection, onMessage} = getConnection()
+  const {connection} = getConnection()
   const url = "wss://maxchat.moobz.com.br/cable";
   const pubsub = "WM3DQweHyTHZ5v728FeTUc5X";
   const account_id = 19;
   const user_id = 6;
+  const agent_role = "agent"
 
   useEffect(() => {
-    const messageHandler = (messageData: { [key: string]: any }, source: string) => {
-      onMessage(messageData, source, processedRef, setmessage);
-    };
-    const cleanup = connection(url, pubsub, account_id, user_id, setConnectionStatus, messageHandler);
-    return cleanup;
+
+    return connection(url, pubsub, account_id, user_id, agent_role, setConnectionStatus, setmessage);
+
   }, []);
 
   return (
@@ -55,7 +53,7 @@ export default function Home() {
                   
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: msg.sender_type ==='Contact' ? 'flex-end' : 'flex-start'
+                  alignItems: msg.sender_type ==='Contact' ? 'flex-start' : 'flex-end'
                 }}>
                   <div
                     style={{
@@ -71,7 +69,7 @@ export default function Home() {
                   </div>
               </div>
               
-              {/* <pre style={{ 
+              <pre style={{ 
                 backgroundColor: '#fff', 
                 padding: '10px', 
                 borderRadius: '4px',
@@ -80,7 +78,7 @@ export default function Home() {
                 border: '1px solid #eee'
               }}>
                 {JSON.stringify(msg, null, 2)}
-              </pre> */}
+              </pre>
             </div>
           ))
         )}

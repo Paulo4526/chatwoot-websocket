@@ -6,8 +6,9 @@ export const getConnection = () => {
         string, 
         account_id: number,
         user_id: number,
+        agent_role: string,
         setConnectionStatus: (connection: string) => void,
-        onMessage: (messageData: { [key: string]: any }, source: string) => void
+        setmessage: (updater: (prev: any[]) => any[]) => void
     ) => {
         const connection = new WebSocket(url);
         const seen = new Set<string>();
@@ -44,40 +45,53 @@ export const getConnection = () => {
         };
 
         connection.onmessage = (event) => {
-        // Início Recebimento de mensagens
+            // Início Recebimento de mensagens
+            
             try {
                 const data = JSON.parse(event.data);
-                // Extrair payload padronizado (sem fallback por type)
-                // Considera formatos comuns do ActionCable: message.data, message, ou data direto
-                const payload = (data && (
-                    (data.message && (data.message.data ?? data.message)) ??
-                    data.data
-                )) as any;
+                const getMessage = data.message
 
-                // Início Processamento de mensagens
-                if (payload) {
-                    const messageData = Array.isArray(payload) ? payload[0] : payload;
-                    const key = typeof (messageData?.content) === 'string' ? messageData.content : JSON.stringify(messageData);
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        onMessage(messageData, "message_type");
+                // Funçao para verificar se a menssagem contem conteúdo
+                if(getMessage?.data?.content){
+                        //Contante que atribui o caiminho até o objeto conversacao
+                        const conversation = getMessage.data.conversation
+
+                        //Condicional que verifica se o status da menssagem foi lido para nao gerar menssagem duplicada
+                        if(getMessage?.data?.status === "read"){
+                            console.log("Menssagem lida pelo cliente!")
+
+                        }else{
+                            //Condicional que verifica a role do agente, caso seja adiministrador ele pode ver todas as conversas atribuidas ou nao
+                            if(agent_role === "administrator"){
+                                const content = getMessage.data
+                                console.log(content)
+                                setmessage(prev => [...prev, { ...content}]);
+
+                            }else{
+                                //Condicional para agentes normais, onde só poderá ser visto as menssagen nao atribuidas ou atribuidas ao proprio agente
+                                if(conversation.assignee_id === user_id || conversation.assignee_id === null){
+                                    const content = getMessage.data
+                                    console.log(content)
+                                    setmessage(prev => [...prev, { ...content}]);
+                                }
+                            }
+                        }
                     }
-                }
-            // Fim Processamento de mensagens
 
             } catch (err) {
                 console.error("❌ Erro ao processar mensagem WebSocket:", err);
                 console.error("📄 Dados que causaram erro:", event.data);
             }
-        // Fim Recebimento de mensagens
+            // Fim Recebimento de mensagens
         };
 
-        connection.onerror = (error) => {
+
+        connection.onerror = (error: any) => {
             console.error("❌ Erro na conexão:", error);
             setConnectionStatus("Erro na conexão");
         };
 
-        connection.onclose = (event) => {
+        connection.onclose = (event: any) => {
             console.warn("🔌 Conexão encerrada:", event);
             setConnectionStatus("Conexão encerrada");
         };
@@ -86,24 +100,5 @@ export const getConnection = () => {
         };
     }
 
-    const onMessage = (
-        messageData: { [key: string]: any }, 
-        source: string,
-        processedRef: { current: Set<string> },
-        setmessage: (updater: (prev: any[]) => any[]) => void
-    ) => {
-        const content = messageData?.content;
-        const msgType = messageData?.type;
-        if (!content || (typeof content === 'string' && content.trim().length === 0)) return;
-        if ((typeof content === 'string' && content.trim().toLowerCase() === 'ping') || msgType === 'ping') return;
-
-        const scopeKey = (messageData?.conversation_id ?? messageData?.room_id ?? messageData?.chat_id ?? messageData?.id ?? '').toString();
-        const contentKey = typeof content === 'string' ? content.trim() : JSON.stringify(content);
-        const id = `${scopeKey}|${contentKey}`;
-        if (processedRef.current.has(id)) return;
-        processedRef.current.add(id);
-        setmessage(prev => [...prev, { ...messageData, _messageId: id, _source: source }]);
-    };
-
-    return({connection, onMessage})
+    return({connection})
 }
