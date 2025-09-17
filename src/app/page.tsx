@@ -6,7 +6,7 @@ export default function Home() {
   const [getmessage, setmessage] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>("Conectando...");
   const {connection} = getConnection()
-  const url = "wss://maxchat.moobz.com.br/cable";
+  const url = "wss://<seu-dominio>/cable";
   const pubsub = "WM3DQweHyTHZ5v728FeTUc5X";
   const account_id = 19;
   const user_id = 6;
