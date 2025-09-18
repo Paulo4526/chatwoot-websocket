@@ -6,12 +6,11 @@ export const getConnection = () => {
         string, 
         account_id: number,
         user_id: number,
-        agent_role: string,
+        conversation_id: number,
         setConnectionStatus: (connection: string) => void,
         setmessage: (updater: (prev: any[]) => any[]) => void
     ) => {
         const connection = new WebSocket(url);
-        const seen = new Set<string>();
 
         connection.onopen = () => {
             setConnectionStatus("Conectado");
@@ -50,30 +49,23 @@ export const getConnection = () => {
             try {
                 const data = JSON.parse(event.data);
                 const getMessage = data.message
+                
 
                 // Funçao para verificar se a menssagem contem conteúdo
                 if(getMessage?.data?.content){
                         //Contante que atribui o caiminho até o objeto conversacao
                         const conversation = getMessage.data.conversation
+                        const id_conversation = getMessage.data.conversation_id 
 
                         //Condicional que verifica se o status da menssagem foi lido para nao gerar menssagem duplicada
                         if(getMessage?.data?.status === "read"){
                             console.log("Menssagem lida pelo cliente!")
-
                         }else{
-                            //Condicional que verifica a role do agente, caso seja adiministrador ele pode ver todas as conversas atribuidas ou nao
-                            if(agent_role === "administrator"){
+                            //Condicional para agentes normais, onde só poderá ser visto as menssagen nao atribuidas ou atribuidas ao proprio agente
+                            if((conversation.assignee_id === user_id) && (id_conversation === conversation_id)){
                                 const content = getMessage.data
                                 console.log(content)
                                 setmessage(prev => [...prev, { ...content}]);
-
-                            }else{
-                                //Condicional para agentes normais, onde só poderá ser visto as menssagen nao atribuidas ou atribuidas ao proprio agente
-                                if(conversation.assignee_id === user_id || conversation.assignee_id === null){
-                                    const content = getMessage.data
-                                    console.log(content)
-                                    setmessage(prev => [...prev, { ...content}]);
-                                }
                             }
                         }
                     }
