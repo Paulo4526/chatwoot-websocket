@@ -1,3 +1,7 @@
+import { AgentContextProvider } from "@/context/agent/agentProvider";
+import { Theme } from "@radix-ui/themes";
+import "@radix-ui/themes/styles.css";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -6,7 +10,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <Theme>
+          <AgentContextProvider>
+            {children} 
+          </AgentContextProvider>
+        </Theme>
       </body>
     </html>
   );

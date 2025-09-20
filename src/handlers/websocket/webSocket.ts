@@ -2,11 +2,10 @@ export const getConnection = () => {
     
     const connection = (
         url: string, 
-        pubsub: 
-        string, 
-        account_id: number,
-        user_id: number,
-        conversation_id: number,
+        pubsub: string, 
+        account_id: string,
+        user_id: string,
+        conversation_id: string,
         setConnectionStatus: (connection: string) => void,
         setmessage: (updater: (prev: any[]) => any[]) => void
     ) => {
@@ -48,32 +47,35 @@ export const getConnection = () => {
             
             try {
                 const data = JSON.parse(event.data);
-                const getMessage = data.message
-                
+                const getMessage = data.message;
 
-                // Funçao para verificar se a menssagem contem conteúdo
-                if(getMessage?.data?.content){
-                        //Contante que atribui o caiminho até o objeto conversacao
-                        const conversation = getMessage.data.conversation
-                        const id_conversation = getMessage.data.conversation_id 
+                if(getMessage?.data){
+                    if(getMessage?.data?.status === 'read'){
+                        console.log("Mensagem lida pelo cliente!");
 
-                        //Condicional que verifica se o status da menssagem foi lido para nao gerar menssagem duplicada
-                        if(getMessage?.data?.status === "read"){
-                            console.log("Menssagem lida pelo cliente!")
-                        }else{
-                            //Condicional para agentes normais, onde só poderá ser visto as menssagen nao atribuidas ou atribuidas ao proprio agente
-                            if((conversation.assignee_id === user_id) && (id_conversation === conversation_id)){
-                                const content = getMessage.data
-                                console.log(content)
-                                setmessage(prev => [...prev, { ...content}]);
-                            }
+                    }else if(getMessage?.data?.attachments){
+                        getMessage?.data?.attachments.forEach((event: any) => {
+                            console.log(event)
+                        })
+
+                    }else if(getMessage?.data?.content){
+                        console.log(getMessage.data.content)
+                        const conversation = getMessage.data.conversation;
+                        const id_conversation = getMessage.data.conversation_id;
+
+                        if (String(conversation.assignee_id) === user_id && String(id_conversation) === conversation_id) {
+                            const content = getMessage.data;
+                            console.log(content);
+                            setmessage(prev => [...prev, { ...content }]);
                         }
                     }
-
+                }
             } catch (err) {
-                console.error("❌ Erro ao processar mensagem WebSocket:", err);
-                console.error("📄 Dados que causaram erro:", event.data);
+                console.error("Erro ao processar mensagem WebSocket:", err);
+                console.error("Dados que causaram erro:", event.data);
             }
+
+
             // Fim Recebimento de mensagens
         };
 
