@@ -54,9 +54,9 @@ export const getConnection = () => {
                         console.log("Mensagem lida pelo cliente!");
 
                     }else if(getMessage?.data?.attachments){
-                        getMessage?.data?.attachments.forEach((event: any) => {
-                            console.log(event)
-                        })
+                        const content = getMessage.data;
+                            console.log(content);
+                            setmessage(prev => [...prev, { ...content }]);
 
                     }else if(getMessage?.data?.content){
                         console.log(getMessage.data.content)

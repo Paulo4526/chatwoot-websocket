@@ -21,7 +21,7 @@ export default function Home() {
       {getLoad ? (
         <Flex direction={"column"} width={'500px'} align={"center"} px={"3"}>
         <Chat width = '100%' height= '50vh' agent={agent}/>
-        <ChatCaixa width = '100%' padding= '0px' height='15vh' borderStyle= 'none' agent={agent} conversation={61}/>
+        <ChatCaixa width = '100%' padding= '0px' height='15vh' borderStyle= 'none' agent={agent} conversation={70}/>
       </Flex>
       ) : (
         <>

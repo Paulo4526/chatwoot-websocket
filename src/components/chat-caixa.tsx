@@ -2,7 +2,7 @@ import { AgentInfo } from "@/model/model-user";
 import RequestMessage from "@/requests/requests";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Button, Flex, Spinner, TextArea } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface GetAgent{
     agent: AgentInfo | null;

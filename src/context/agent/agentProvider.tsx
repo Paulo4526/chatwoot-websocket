@@ -22,7 +22,7 @@ export const AgentContextProvider:React.FC<GetNode> = ({children}) => {
 
     useEffect(() => {
         if (!login){
-            agentLogin('paulosilvaabueno@gmail.com', 'Bueninho1!', setAgent, setLogin)
+            agentLogin('paulosilvabuenoo@gmail.com', 'Bueninho1!', setAgent, setLogin)
         }
     },[login])
 

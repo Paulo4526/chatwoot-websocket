@@ -3,7 +3,10 @@
 import { getConnection } from "@/handlers/websocket/webSocket";
 import { AgentInfo } from "@/model/model-user";
 import { ScrollArea } from "@radix-ui/themes";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import "plyr-react/plyr.css"
+import PlayButton from "./play-buton";
+import ImagePreview from "./image-chato";
 interface GetAgent{
     agent: AgentInfo | null;
 }
@@ -13,10 +16,8 @@ const Chat:React.FC<GetAgent | any> = ({agent, ...props}) => {
     const [connectionStatus, setConnectionStatus] = useState<string>("Conectando...");
     const {connection} = getConnection()
     const url = "wss://maxchat.moobz.com.br/cable";
-    const conversation_id = 61;
+    const conversation_id = 70;
     const scrollRef = useRef<HTMLDivElement>(null);
-    
-
     useEffect(() => {
         const timer = setTimeout(() => {
             if (!agent){
@@ -65,17 +66,41 @@ const Chat:React.FC<GetAgent | any> = ({agent, ...props}) => {
                         ) : (
                             getmessage.map((msg, index) => (
                                 <div key={msg._messageId || index} style={{ display: 'flex', justifyContent: msg.sender_type === 'Contact' ? 'flex-start' : 'flex-end', padding: '0px 20px' }}>
-                                    <div style={{
-                                        backgroundColor: msg.sender_type === 'Contact' ? '#118dd4ad' : '#5be41cb7',
+                                    <div 
+                                    key={msg._messageId || index} 
+                                    style={{
+                                        backgroundColor: msg.attachments ? 'transparent' : msg.sender_type === 'Contact' ? '#118dd4ad' : '#5be41cb7',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         borderRadius: 5,
                                         padding: '5px',
                                         maxWidth: '40%',
                                         wordBreak: 'break-word'
-                                    }}>
-                                        <p style={{ fontSize: 12, margin:'0px' }}>{msg.content}</p>
-                                        <p style={{ fontSize: 7, margin:'0px' }}>{msg.updated_at}</p>
+                                    }}
+                                    
+                                    >
+                                        <>
+                                            {msg.attachments? (
+                                                <>
+                                                    {msg.attachments.map((url: any) => (
+                                                        <React.Fragment key={url.data_url}>
+                                                            {url.file_type === 'audio' ? (     
+                                                                <PlayButton url={url.data_url}/>        
+                                                            ) :(
+                                                                <ImagePreview url={url.data_url}/>
+                                                            ) 
+                                                            
+                                                            }
+                                                        </React.Fragment>
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p style={{ fontSize: 12, margin:'0px' }}>{msg.content}</p>
+                                                    <p style={{ fontSize: 7, margin:'0px' }}>{msg.updated_at}</p>
+                                                </>
+                                            )}
+                                        </>
                                     </div>
                                 </div>
                             ))
