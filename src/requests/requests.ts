@@ -50,7 +50,44 @@ const RequestMessage = () => {
             console.error('Erro ao fazer login!')
         }
     }
-    return({sendMessage, agentLogin})
+
+    const getMessage = async (
+        account_id: number,
+        acess_token: string,
+        team_id: number,
+        setMessage: (setValue: (prev: any[]) => any[]) => void
+    ) => {
+        const res = await fetch('https://maxn8n.moobz.com.br/webhook/c21d6da0-b991-4553-bf8d-76c8412c619c', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({ account_id, acess_token, team_id })
+        });
+
+        if (res.status == 200){
+            console.log("Menssagem enviada com sucesso!")
+            const data = await res.json()
+            const payload = data.payloads
+            payload.map((event: any) => {
+                console.log("messages: ", event.messages)
+                const message = event.messages[0]
+                const object: any = {
+                    "content": `${message.content}`,
+                    "sender_type": `${message.sender_type}`,
+                    "conversation_id" : `${message.conversation_id}`,
+                    "updated_at": `${message.updated_at}`,
+                    // "telefone": `${message.sender.phone_number}`
+                }
+                if(message?.sender){
+                    object.name = `${message.sender.name}`;
+                    object.telefone = `${message.sender.phone_number}`;
+                }
+                setMessage(prev => [...prev, {...object}]);
+            })
+        }else{
+            alert("Erro ao Enviar a menssagem!")
+        }
+    }
+    return({sendMessage, agentLogin, getMessage})
 }
 
 export default RequestMessage
