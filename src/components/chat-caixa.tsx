@@ -1,5 +1,5 @@
 import { AgentInfo } from "@/model/model-user";
-import RequestMessage from "@/requests/requests";
+import { sendMessage } from "@/requests/messages/sendMessage";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Button, Flex, Spinner, TextArea } from "@radix-ui/themes";
 import { useState } from "react";
@@ -10,7 +10,6 @@ interface GetAgent{
 
 const ChatCaixa:React.FC<GetAgent | any> = ({agent, ...props}) => {
     const [getMessage, setMessage] = useState<string>("");
-    const {sendMessage} = RequestMessage();
     const [MessageLoad, setMessageLoad] = useState<boolean>(true)
 
     return(

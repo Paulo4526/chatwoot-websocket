@@ -10,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Theme>
+        <Theme appearance="dark">
           <AgentContextProvider>
             {children} 
           </AgentContextProvider>

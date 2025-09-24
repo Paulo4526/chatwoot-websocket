@@ -5,7 +5,7 @@ export const getConnection = () => {
         pubsub: string, 
         account_id: string,
         user_id: string,
-        conversation_id: string,
+        conversation_id: number,
         setConnectionStatus: (connection: string) => void,
         setmessage: (updater: (prev: any[]) => any[]) => void
     ) => {
@@ -55,17 +55,18 @@ export const getConnection = () => {
 
                     }else if(getMessage?.data?.attachments){
                         const content = getMessage.data;
-                            console.log(content);
-                            setmessage(prev => [...prev, { ...content }]);
+                        console.log(content);
+                        setmessage(prev => [...prev, { ...content }]);
+                        console.log(data)
 
                     }else if(getMessage?.data?.content){
                         console.log(getMessage.data.content)
                         const conversation = getMessage.data.conversation;
                         const id_conversation = getMessage.data.conversation_id;
 
-                        if (String(conversation.assignee_id) === user_id && String(id_conversation) === conversation_id) {
+                        if (String(conversation.assignee_id) === user_id && id_conversation === conversation_id) {
                             const content = getMessage.data;
-                            console.log(content);
+                            console.log(content)
                             setmessage(prev => [...prev, { ...content }]);
                         }
                     }

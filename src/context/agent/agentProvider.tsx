@@ -1,7 +1,7 @@
 'use client'
 
 import { AgentInfo} from "@/model/model-user"
-import RequestMessage from "@/requests/requests";
+import { agentLogin } from "@/requests/login/login";
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 interface getTrivialDetails{
@@ -16,7 +16,6 @@ export interface GetNode {
 }
 
 export const AgentContextProvider:React.FC<GetNode> = ({children}) => {
-    const {agentLogin} = RequestMessage();
     const [agent, setAgent] = useState<AgentInfo | null>(null)
     const [login, setLogin] = useState<boolean>(false)
 

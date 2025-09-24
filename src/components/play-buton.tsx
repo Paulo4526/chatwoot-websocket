@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import { PauseIcon, PlayIcon } from "@radix-ui/react-icons";
-import { Button } from "@radix-ui/themes";
+import { Button, Flex, Text } from "@radix-ui/themes";
 import React, { useRef, useState, useEffect } from "react";
 
 interface PlayButtonProps {
@@ -17,18 +17,14 @@ export default function PlayButton({ url }: PlayButtonProps) {
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  // Atualiza o tempo com requestAnimationFrame
   const updateTime = () => {
     const audio = audioRef.current;
-    if (audio && !dragging) {
-      setCurrentTime(audio.currentTime);
-    }
+    if (audio && !dragging) setCurrentTime(audio.currentTime);
     animationRef.current = requestAnimationFrame(updateTime);
   };
 
   useEffect(() => {
     const audio = audioRef.current;
-
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => setPlaying(false);
 
@@ -43,20 +39,14 @@ export default function PlayButton({ url }: PlayButtonProps) {
   }, []);
 
   useEffect(() => {
-    if (playing) {
-      animationRef.current = requestAnimationFrame(updateTime);
-    } else {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    }
+    if (playing) animationRef.current = requestAnimationFrame(updateTime);
+    else if (animationRef.current) cancelAnimationFrame(animationRef.current);
   }, [playing]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    if (playing) audio.pause();
-    else audio.play();
-
+    playing ? audio.pause() : audio.play();
     setPlaying(!playing);
   };
 
@@ -73,32 +63,27 @@ export default function PlayButton({ url }: PlayButtonProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const displayedTime = currentTime === 0 ? formatTime(duration) : formatTime(currentTime);
+  // Mostra tempo decorrido / total ou total se não começou
+  const displayedTime =
+    currentTime === 0
+      ? formatTime(duration)
+      : `${formatTime(currentTime)} / ${formatTime(duration)}`;
 
   return (
-    <div
+    <Flex
+      align="center"
+      gap="2"
       style={{
-        display: "flex",
-        alignItems: "center",
-        width: 220,
-        gap: 8,
+        width: '150px',
         padding: "4px 8px",
         borderRadius: 8,
-        backgroundColor: "#f5f5f5",
-        fontFamily: "sans-serif",
         position: "relative",
       }}
     >
       {/* Botão play/pause */}
       <Button
         onClick={togglePlay}
-        style={{
-          width: 32,
-          height: 32,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+        style={{ width: 32, height: 32, display: "flex", justifyContent: "center", alignItems: "center" }}
       >
         {playing ? <PauseIcon /> : <PlayIcon />}
       </Button>
@@ -125,19 +110,20 @@ export default function PlayButton({ url }: PlayButtonProps) {
           height: 4,
           borderRadius: 2,
           background: "#e0e0e0",
-          accentColor: "#118dd4",
           cursor: "pointer",
+          width:'20px'
         }}
       />
 
       {/* Tempo */}
-      <span style={{ fontSize: 10, minWidth: 40, textAlign: "right" }}>
+      <Text size="1" align="right" style={{ minWidth: 50, fontSize: 10 }}>
         {displayedTime}
-      </span>
+      </Text>
 
       {/* Tooltip */}
       {hoverTime !== null && duration > 0 && (
-        <div
+        <Text
+          size="1"
           style={{
             position: "absolute",
             left: `${hoverTime}%`,
@@ -145,15 +131,15 @@ export default function PlayButton({ url }: PlayButtonProps) {
             transform: "translateX(-50%)",
             backgroundColor: "#000",
             color: "#fff",
-            fontSize: 10,
             padding: "2px 4px",
             borderRadius: 3,
             whiteSpace: "nowrap",
+            fontSize: 9,
           }}
         >
           {formatTime((hoverTime / 100) * duration)}
-        </div>
+        </Text>
       )}
-    </div>
+    </Flex>
   );
 }

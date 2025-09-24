@@ -2,114 +2,168 @@
 
 import { getConnection } from "@/handlers/websocket/webSocket";
 import { AgentInfo } from "@/model/model-user";
-import { ScrollArea } from "@radix-ui/themes";
+import { ScrollArea, Flex, Card, Text } from "@radix-ui/themes";
 import React, { useEffect, useRef, useState } from "react";
 import "plyr-react/plyr.css"
 import PlayButton from "./play-buton";
 import ImagePreview from "./image-chato";
-interface GetAgent{
-    agent: AgentInfo | null;
+import RequestMessage from "@/requests/messages/getMessages";
+
+interface GetAgent {
+  agent: AgentInfo | null;
 }
 
-const Chat:React.FC<GetAgent | any> = ({agent, ...props}) => {
-    const [getmessage, setmessage] = useState<any[]>([]);
-    const [connectionStatus, setConnectionStatus] = useState<string>("Conectando...");
-    const {connection} = getConnection()
-    const url = "wss://maxchat.moobz.com.br/cable";
-    const conversation_id = 70;
-    const scrollRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!agent){
-                    setConnectionStatus("Erro na conexão!")
-                    return;
-            }else{
-                return connection(url, agent.pubsub_token, String(agent.account_id), String(agent.agent_id), String(conversation_id), setConnectionStatus, setmessage);
-            }
-        }, 3000)
-        return () => {
-            clearTimeout(timer)
-        }
-    }, [agent]);
+const Chat: React.FC<GetAgent | any> = ({ agent, ...props }) => {
+  
+  const [connectionStatus, setConnectionStatus] = useState<string>("Conectando...");
+  const { getUserMessages } = RequestMessage();
+  const { connection } = getConnection();
+  const url = "wss://maxchat.moobz.com.br/cable";
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        scrollRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block:"end",
-            inline: "nearest"
-        })
-        
-    }, [getmessage]);
+  useEffect(() => {
+    props.setMessage([]);
+    let closeConnection: (() => void) | undefined;
 
-    return (
-        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', width: props.width}}>
-            <div style={{ 
-                padding: '10px', 
-                marginBottom: '20px', 
-                borderRadius: '8px',
-                backgroundColor: connectionStatus === 'Conectado' ? '#d4edda' : '#f8d7da',
-                border: `1px solid ${connectionStatus === 'Conectado' ? '#c3e6cb' : '#f5c6cb'}`,
-                color: connectionStatus === 'Conectado' ? '#155724' : '#721c24'
-            }}>
-                <strong>Status:</strong> {connectionStatus}
-                </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                </div>
-                
-                <div style={{ marginTop: '20px' }}>
-                <ScrollArea type="always" scrollbars="vertical" style={{ height: props.height, padding: '0px'}}>
-                    <div ref={scrollRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: "flex-end", gap: 10, padding: 5, minHeight: '100%' }}>
-                        {getmessage.length === 0 ? (
-                            <p style={{ color: '#666', fontStyle: 'italic', padding:'0px 20px' }}>
-                                Aguardando mensagens com "content"... Verifique o console do navegador para logs detalhados.
-                            </p>
-                        ) : (
-                            getmessage.map((msg, index) => (
-                                <div key={msg._messageId || index} style={{ display: 'flex', justifyContent: msg.sender_type === 'Contact' ? 'flex-start' : 'flex-end', padding: '0px 20px' }}>
-                                    <div 
-                                    key={msg._messageId || index} 
-                                    style={{
-                                        backgroundColor: msg.attachments ? 'transparent' : msg.sender_type === 'Contact' ? '#118dd4ad' : '#5be41cb7',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        borderRadius: 5,
-                                        padding: '5px',
-                                        maxWidth: '40%',
-                                        wordBreak: 'break-word'
-                                    }}
-                                    
-                                    >
-                                        <>
-                                            {msg.attachments? (
-                                                <>
-                                                    {msg.attachments.map((url: any) => (
-                                                        <React.Fragment key={url.data_url}>
-                                                            {url.file_type === 'audio' ? (     
-                                                                <PlayButton url={url.data_url}/>        
-                                                            ) :(
-                                                                <ImagePreview url={url.data_url}/>
-                                                            ) 
-                                                            
-                                                            }
-                                                        </React.Fragment>
-                                                    ))}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p style={{ fontSize: 12, margin:'0px' }}>{msg.content}</p>
-                                                    <p style={{ fontSize: 7, margin:'0px' }}>{msg.updated_at}</p>
-                                                </>
-                                            )}
-                                        </>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </ScrollArea>
-            </div>
-        </div>
-    )
-}
+    const timer = setTimeout(() => {
+      if (!agent) {
+        setConnectionStatus("Erro na conexão!");
+        return;
+      } else {
+        getUserMessages(
+          agent.account_id,
+          agent.acces_token,
+          props.conversation,
+          props.setMessage
+        );
+        return (closeConnection = connection(
+          url,
+          agent.pubsub_token,
+          String(agent.account_id),
+          String(agent.agent_id),
+          props.conversation,
+          setConnectionStatus,
+          props.setMessage
+        ));
+      }
+    }, 500);
 
-export default Chat
+    return () => {
+      clearTimeout(timer);
+      if (closeConnection) closeConnection();
+    };
+  }, [agent, props.conversation]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
+    });
+  }, [props.getMessage, props.conversation]);
+
+  return (
+    <Flex direction="column" style={{ width: props.width }}>
+      {/* Status da conexão */}
+      <Card
+        variant="surface"
+        style={{
+          marginBottom: 20,
+          backgroundColor:
+            connectionStatus === "Conectado" ? "#3bf366e1" : "#ce3f4bff",
+          border: `1px solid ${
+            connectionStatus === "Conectado" ? "black" : "white"
+          }`,
+        }}
+      >
+        <Text
+          size="2"
+          style={{color: connectionStatus === "Conectado" ? "black" : "white"}}
+        >
+          Status: {connectionStatus}
+        </Text>
+      </Card>
+
+      {/* Área de mensagens */}
+      <ScrollArea
+        type="always"
+        scrollbars="vertical"
+        style={{ height: props.height }}
+      >
+        <Flex
+          ref={scrollRef}
+          direction="column"
+          justify="end"
+          gap="2"
+          style={{ minHeight: "100%", padding: 8 }}
+        >
+          {props.getMessage.length === 0 ? (
+            <Text size="2" color="gray" style={{ fontStyle: "italic" }}>
+              Aguardando mensagens com "content"... Verifique o console para
+              logs detalhados.
+            </Text>
+          ) : (
+            props.getMessage.map((msg: any) => (
+              <Flex
+                key={msg.id}
+                justify={
+                  msg.sender?.type?.toLowerCase() === "contact"
+                    ? "start"
+                    : "end"
+                }
+                style={{ padding: "0 10px" }}
+              >
+                <Card
+                  variant="classic"
+                  style={{
+                    backgroundColor: msg.attachments
+                      ? "transparent"
+                      : msg.sender?.type?.toLowerCase() === "contact"
+                      ? "#118dd4ad"
+                      : "#5be41cb7",
+                    maxWidth: "40%",
+                  }}
+                >
+                  <Flex direction="column" gap="1">
+                    {msg.attachments ? (
+                      <>
+                        {msg.attachments.map((url: any) => (
+                          <React.Fragment key={url.data_url}>
+                            {url.file_type === "audio" ? (
+                              <PlayButton url={url.data_url} />
+                              
+                            ) : (
+                              <ImagePreview url={url.data_url} />
+                            )}
+                          </React.Fragment>
+                        ))}
+                        <Text size="1" color="gray" align="right">
+                          {new Date(msg.created_at * 1000).toLocaleString(
+                            "pt-BR",
+                            { timeZone: "America/Sao_Paulo" }
+                          )}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text size="2">{msg.content}</Text>
+                        <Text size="1" color="gray" align="right">
+                          {new Date(msg.created_at * 1000).toLocaleString(
+                            "pt-BR",
+                            { timeZone: "America/Sao_Paulo" }
+                          )}
+                        </Text>
+                      </>
+                    )}
+                  </Flex>
+                </Card>
+              </Flex>
+            ))
+          )}
+        </Flex>
+      </ScrollArea>
+    </Flex>
+  );
+};
+
+export default Chat;
