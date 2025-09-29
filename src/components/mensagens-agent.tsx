@@ -8,40 +8,46 @@ interface GetNode {
 }
 
 const MensagensAgent: React.FC<GetNode | any> = ({ agent, ...props }) => {
-  const [getmessage, setMessage] = useState<any[]>([]);
-  const { getMessage } = RequestMessage();
+  const { getAgentMessage } = RequestMessage();
 
   useEffect(() => {
   if (!agent) return;
 
   // Chama imediatamente
-  getMessage(agent.account_id, agent.acces_token, agent.team_id, setMessage);
+  getAgentMessage(agent.account_id, agent.acces_token, agent.team_id, props.setMessage);
 
   // Chama a cada 10 segundos
   const interval = setInterval(() => {
-    getMessage(agent.account_id, agent.acces_token, agent.team_id, setMessage);
-  }, 10000); // 10000ms = 10s
+    getAgentMessage(agent.account_id, agent.acces_token, agent.team_id, props.setMessage);
+  }, 5000); // 5000ms = 5s
 
   return () => clearInterval(interval); // limpa ao desmontar ou mudar agent
-}, [agent, props.conversation]);
-
+}, [agent]);
 
   return (
     <Flex direction="column" gap="3" width={'280px'}>
       <Card style={{textAlign: 'center', backgroundColor:"white"}}>
         <Text style={{color:"black"}}>Minhas Menssagens</Text>
       </Card>
-      {getmessage.length > 0 ? (
+      {props.getMessage !== null ? (
         <Flex direction="column" gap="2">
-          {getmessage
+          {props.getMessage
             .slice()
-            .sort((a, b) => a.conversation_id - b.conversation_id)
-            .map((msg) => (
+            .sort((a: any, b: any) => a.conversation_id - b.conversation_id)
+            .map((msg: any) => (
               <Card
                 key={msg.conversation_id}
                 variant="classic"
-                style={{ cursor: "pointer" }}
-                onClick={() => props.setConversation(Number(msg.conversation_id))}
+                style={{ cursor: "pointer", height: '100px' }}
+                onClick={() => {
+                  props.setConversation(Number(msg.conversation_id))
+                  props.assignee(Number(msg.assignee_id))
+                  if(msg.name === null){
+                    props.contact(msg.telefone)
+                  }else{
+                    props.contact(msg.name)
+                  }
+                }}
               >
                 <Flex direction="column" gap="1">
                   <Text size="1" weight="bold">

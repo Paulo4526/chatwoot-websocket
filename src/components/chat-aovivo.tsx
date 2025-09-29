@@ -76,12 +76,17 @@ const Chat: React.FC<GetAgent | any> = ({ agent, ...props }) => {
           }`,
         }}
       >
-        <Text
+        <Flex direction={"row"} justify={"between"}>
+          <Text
           size="2"
           style={{color: connectionStatus === "Conectado" ? "black" : "white"}}
         >
           Status: {connectionStatus}
         </Text>
+        <Text>
+          {props.contact}
+        </Text>
+        </Flex>
       </Card>
 
       {/* Área de mensagens */}
