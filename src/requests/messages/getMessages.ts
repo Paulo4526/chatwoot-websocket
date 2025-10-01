@@ -36,33 +36,13 @@ const getAgentMessage = async (
 
                 newMessages.push(object);
             });
+            setMessage(prev =>
+            newMessages.map(newMsg =>
+                prev.find(msg => msg.conversation_id === newMsg.conversation_id)?.message_id === newMsg.message_id
+                ? prev.find(msg => msg.conversation_id === newMsg.conversation_id)!
+                : newMsg
+            ));
 
-            setMessage(prev => {
-            let updated = [...prev];
-
-            // 1️⃣ Remove mensagens que existem no state mas não vieram na requisição
-            updated = updated.filter(prevMsg =>
-                newMessages.some(newMsg => newMsg.conversation_id === prevMsg.conversation_id)
-            );
-
-            // 2️⃣ Adiciona ou atualiza mensagens
-            newMessages.forEach(newMsg => {
-                const index = updated.findIndex(
-                    msg => msg.conversation_id === newMsg.conversation_id
-                );
-
-                if (index === -1) {
-                    // Adiciona novo item
-                    updated.push(newMsg);
-                } else if (updated[index].message_id !== newMsg.message_id) {
-                    // Atualiza item existente se o message_id for diferente
-                    updated[index] = newMsg;
-                }
-                // se message_id for igual, mantém como está
-            });
-
-            return updated;
-        });
         } else {
             alert("Erro ao enviar a mensagem!");
         }
@@ -104,35 +84,12 @@ const getAgentMessage = async (
                 newMessages.push(object);
             });
 
-            console.log(newMessages)
-
-            setMessage(prev => {
-            let updated = [...prev];
-
-            // 1️⃣ Remove mensagens que existem no state mas não vieram na requisição
-            updated = updated.filter(prevMsg =>
-                newMessages.some(newMsg => newMsg.conversation_id === prevMsg.conversation_id)
-            );
-
-            // 2️⃣ Adiciona ou atualiza mensagens
-            newMessages.forEach(newMsg => {
-                const index = updated.findIndex(
-                    msg => msg.conversation_id === newMsg.conversation_id
-                );
-
-                if (index === -1) {
-                    // Adiciona novo item
-                    updated.push(newMsg);
-                } else if (updated[index].message_id !== newMsg.message_id) {
-                    // Atualiza item existente se o message_id for diferente
-                    updated[index] = newMsg;
-                }
-                // se message_id for igual, mantém como está
-            });
-
-            return updated;
-        });
-
+            setMessage(prev =>
+            newMessages.map(newMsg =>
+                prev.find(msg => msg.conversation_id === newMsg.conversation_id)?.message_id === newMsg.message_id
+                ? prev.find(msg => msg.conversation_id === newMsg.conversation_id)!
+                : newMsg
+            ));
 
         }else{
             alert("Erro ao Enviar a menssagem!")
@@ -160,24 +117,10 @@ const getAgentMessage = async (
                 newMessages.push(event);
             })
 
-            // console.log(newMessages)
-            setMessage(prev => {
-            // remove mensagens antigas que não estão na nova resposta
-                const filtered = prev.filter(msg =>
-                    newMessages.some(newMsg => newMsg.id === msg.id)
-                );
-
-                // adiciona mensagens novas que ainda não estavam no state
-                newMessages.forEach(newMsg => {
-
-                const exists = filtered.find(msg => msg.id === newMsg.id);
-                if (!exists) filtered.push(newMsg);
-
-            });
-
-            return filtered;
-        });
-
+            setMessage(prev => [
+                ...newMessages.filter(newMsg => !prev.some(msg => msg.id === newMsg.id)),
+                ...prev.filter(msg => newMessages.some(newMsg => newMsg.id === msg.id))
+            ]);
 
         }else{
             alert("Erro ao Enviar a menssagem!")

@@ -2,10 +2,11 @@
 
 import Chat from "@/components/chat-aovivo";
 import ChatCaixa from "@/components/chat-caixa";
+import InformacoesContato from "@/components/contactInfo";
 import MensagensAgent from "@/components/mensagens-agent";
 import MensagensTeam from "@/components/mensagens-team";
 import { GetAgentContext } from "@/context/agent/agentContext";
-import { Flex } from "@radix-ui/themes";
+import { Flex, Spinner } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -51,7 +52,8 @@ export default function Home() {
               <Flex>Carregando</Flex>
             </>
           ) : (
-            <Flex direction={"column"} width={'500px'} align={"center"} px={"3"}>
+            <Flex direction={"row"}>
+              <Flex direction={"column"} width={'500px'} align={"center"} px={"3"}>
               <Chat 
                 width = '100%' 
                 height= '50vh' 
@@ -69,14 +71,20 @@ export default function Home() {
                 borderStyle= 'none' 
                 agent={agent} 
                 conversation={getConversation}
-              />
-              ) : (null)}
+                />
+                ) : (null)}
+              </Flex>
+                <InformacoesContato 
+                  contact={getContact}
+                  conversation={getConversation}
+                  agent={agent}
+                />
             </Flex>
           )}
         </Flex>
       ) : (
         <>
-          Carregando a tela!
+          <Spinner/>
         </>
       )}
     </>
